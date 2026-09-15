@@ -1,9 +1,12 @@
 server:
-  port: 8081
+  port: 8084
 
 spring:
-  data:
-    mongodb:
-      uri: mongodb://localhost:27017/powerup
+  mongodb:
+    uri: mongodb+srv://${DB_USER}:${DB_PASS}@${DB_HOST}/pragma?appName=srdejo
+
+jwt:
+  secret: ${JWT_SECRET:una-clave-secreta-de-al-menos-32-bytes}
+
 appDescription: "Pragma Powerup"
 appVersion: "1.0.0"

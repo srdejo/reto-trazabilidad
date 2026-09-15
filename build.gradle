@@ -34,14 +34,26 @@ ext {
 	lombokVersion = "1.18.46"
 	lombokMapstructBindingVersion = "0.2.0"
 	openApiVersion = "2.8.6"
+	springSecurityCrypto = "7.0.7"
+	ioJWTVersion = "0.13.0"
 }
 
 dependencies {
 	implementation "org.springframework.boot:spring-boot-starter-data-mongodb:${springBootVersion}"
 	implementation "org.springframework.boot:spring-boot-starter-validation:${springBootVersion}"
 	implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
+	implementation "org.springframework.security:spring-security-crypto:${springSecurityCrypto}"
+	implementation "org.springframework.boot:spring-boot-starter-security:${springBootVersion}"
+	implementation "io.jsonwebtoken:jjwt-api:${ioJWTVersion}"
+
 	developmentOnly "org.springframework.boot:spring-boot-devtools:${springBootVersion}"
+
+	testImplementation "org.springframework.security:spring-security-test"
 	testImplementation "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+	testImplementation "org.springframework.boot:spring-boot-webmvc-test:${springBootVersion}"
+
+	runtimeOnly "io.jsonwebtoken:jjwt-impl:${ioJWTVersion}"
+	runtimeOnly "io.jsonwebtoken:jjwt-jackson:${ioJWTVersion}"
 
 	implementation "org.mapstruct:mapstruct:${mapstructVersion}"
 	compileOnly "org.projectlombok:lombok:${lombokVersion}"
