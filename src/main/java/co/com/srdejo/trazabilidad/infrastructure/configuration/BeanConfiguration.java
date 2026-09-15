@@ -1,11 +1,13 @@
 package co.com.srdejo.trazabilidad.infrastructure.configuration;
 
-import co.com.srdejo.trazabilidad.domain.api.IObjectServicePort;
-import co.com.srdejo.trazabilidad.domain.spi.IObjectPersistencePort;
-import co.com.srdejo.trazabilidad.domain.usecase.ObjectUseCase;
-import co.com.srdejo.trazabilidad.infrastructure.out.mongo.adapter.ObjectMongoAdapter;
-import co.com.srdejo.trazabilidad.infrastructure.out.mongo.mapper.IObjectEntityMapper;
-import co.com.srdejo.trazabilidad.infrastructure.out.mongo.repository.IObjectRepository;
+import co.com.srdejo.trazabilidad.domain.api.ITraceabilityServicePort;
+import co.com.srdejo.trazabilidad.domain.spi.IAuthenticatedUserPort;
+import co.com.srdejo.trazabilidad.domain.spi.ITraceabilityPersistencePort;
+import co.com.srdejo.trazabilidad.domain.usecase.TraceabilityUseCase;
+import co.com.srdejo.trazabilidad.infrastructure.out.mongo.adapter.TraceabilityMongoAdapter;
+import co.com.srdejo.trazabilidad.infrastructure.out.mongo.mapper.ITraceabilityEntityMapper;
+import co.com.srdejo.trazabilidad.infrastructure.out.mongo.repository.ITraceabilityRepository;
+import co.com.srdejo.trazabilidad.infrastructure.out.security.SecurityContextUserAdapter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,16 +15,22 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @RequiredArgsConstructor
 public class BeanConfiguration {
-    private final IObjectRepository objectRepository;
-    private final IObjectEntityMapper objectEntityMapper;
+
+    private final ITraceabilityRepository traceabilityRepository;
+    private final ITraceabilityEntityMapper traceabilityEntityMapper;
 
     @Bean
-    public IObjectPersistencePort objectPersistencePort() {
-        return new ObjectMongoAdapter(objectRepository, objectEntityMapper);
+    public IAuthenticatedUserPort authenticatedUserPort() {
+        return new SecurityContextUserAdapter();
     }
 
     @Bean
-    public IObjectServicePort objectServicePort() {
-        return new ObjectUseCase(objectPersistencePort());
+    public ITraceabilityPersistencePort traceabilityPersistencePort() {
+        return new TraceabilityMongoAdapter(traceabilityRepository, traceabilityEntityMapper);
+    }
+
+    @Bean
+    public ITraceabilityServicePort traceabilityServicePort() {
+        return new TraceabilityUseCase(traceabilityPersistencePort(), authenticatedUserPort());
     }
 }
