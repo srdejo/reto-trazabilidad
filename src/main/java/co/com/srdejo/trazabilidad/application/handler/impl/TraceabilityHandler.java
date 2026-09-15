@@ -1,6 +1,8 @@
 package co.com.srdejo.trazabilidad.application.handler.impl;
 
 import co.com.srdejo.trazabilidad.application.dto.request.TraceabilityRequestDto;
+import co.com.srdejo.trazabilidad.application.dto.response.EmployeeRankingResponseDto;
+import co.com.srdejo.trazabilidad.application.dto.response.OrderDurationResponseDto;
 import co.com.srdejo.trazabilidad.application.dto.response.TraceabilityResponseDto;
 import co.com.srdejo.trazabilidad.application.handler.ITraceabilityHandler;
 import co.com.srdejo.trazabilidad.application.mapper.ITraceabilityRequestMapper;
@@ -32,5 +34,17 @@ public class TraceabilityHandler implements ITraceabilityHandler {
     public List<TraceabilityResponseDto> getHistoryByCustomer(Long orderId) {
         var models = traceabilityServicePort.getHistoryByCustomer(orderId);
         return traceabilityResponseMapper.toResponseList(models);
+    }
+
+    @Override
+    public OrderDurationResponseDto getOrderDuration(Long orderId) {
+        var model = traceabilityServicePort.getOrderDuration(orderId);
+        return traceabilityResponseMapper.toDurationResponse(model);
+    }
+
+    @Override
+    public List<EmployeeRankingResponseDto> getEmployeeRanking() {
+        var models = traceabilityServicePort.getEmployeeRanking();
+        return traceabilityResponseMapper.toRankingResponseList(models);
     }
 }

@@ -1,7 +1,11 @@
 package co.com.srdejo.trazabilidad.infrastructure.input.rest;
 
+import co.com.srdejo.trazabilidad.application.dto.response.EmployeeRankingResponseDto;
+import co.com.srdejo.trazabilidad.application.dto.response.OrderDurationResponseDto;
 import co.com.srdejo.trazabilidad.application.dto.response.TraceabilityResponseDto;
 import co.com.srdejo.trazabilidad.application.handler.ITraceabilityHandler;
+import co.com.srdejo.trazabilidad.domain.exception.OrderNotDeliveredException;
+import co.com.srdejo.trazabilidad.infrastructure.exception.NoDataFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -149,6 +153,55 @@ class TraceabilityRestControllerTest {
         when(traceabilityHandler.getHistoryByCustomer(null)).thenReturn(List.of());
 
         mockMvc.perform(get("/api/v1/traceability"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isEmpty());
+    }
+
+    @Test
+    void getOrderDuration_deliveredOrder_returnsOkWithDuration() throws Exception {
+        OrderDurationResponseDto responseDto = new OrderDurationResponseDto(
+                123L, LocalDateTime.now().minusMinutes(30), LocalDateTime.now(), 1800L);
+        when(traceabilityHandler.getOrderDuration(123L)).thenReturn(responseDto);
+
+        mockMvc.perform(get("/api/v1/traceability/123/duration"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.orderId").value(123))
+                .andExpect(jsonPath("$.durationSeconds").value(1800));
+    }
+
+    @Test
+    void getOrderDuration_orderNotFound_returns404() throws Exception {
+        when(traceabilityHandler.getOrderDuration(999L)).thenThrow(new NoDataFoundException());
+
+        mockMvc.perform(get("/api/v1/traceability/999/duration"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getOrderDuration_orderNotDelivered_returns409() throws Exception {
+        when(traceabilityHandler.getOrderDuration(123L)).thenThrow(new OrderNotDeliveredException());
+
+        mockMvc.perform(get("/api/v1/traceability/123/duration"))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void getEmployeeRanking_returnsOkWithRankingSortedByHandler() throws Exception {
+        EmployeeRankingResponseDto responseDto = new EmployeeRankingResponseDto(7L, "employee@mail.com", 3, 1200.0);
+        when(traceabilityHandler.getEmployeeRanking()).thenReturn(List.of(responseDto));
+
+        mockMvc.perform(get("/api/v1/traceability/employees/ranking"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].employeeId").value(7))
+                .andExpect(jsonPath("$[0].deliveredOrders").value(3))
+                .andExpect(jsonPath("$[0].averageDurationSeconds").value(1200.0));
+    }
+
+    @Test
+    void getEmployeeRanking_whenNoDeliveredOrders_returnsOkWithEmptyList() throws Exception {
+        when(traceabilityHandler.getEmployeeRanking()).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/v1/traceability/employees/ranking"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isEmpty());
     }

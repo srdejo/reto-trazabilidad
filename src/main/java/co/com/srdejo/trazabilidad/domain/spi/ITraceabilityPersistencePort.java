@@ -9,5 +9,9 @@ public interface ITraceabilityPersistencePort {
     TraceabilityModel save(TraceabilityModel traceabilityModel);
     List<TraceabilityModel> findByCustomerId(Long customerId);
     List<TraceabilityModel> findByCustomerIdAndOrderId(Long customerId, Long orderId);
+    List<TraceabilityModel> findByOrderId(Long orderId);
+    List<TraceabilityModel> findByNewStatus(String newStatus);
+    List<TraceabilityModel> findByOrderIdInAndPreviousStatusIsNull(List<Long> orderIds);
+    List<TraceabilityModel> findByOrderInitAndFinishStatus(Long orderId);
 
 }
