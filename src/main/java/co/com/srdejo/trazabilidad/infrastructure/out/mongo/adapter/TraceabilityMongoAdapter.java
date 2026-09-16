@@ -6,9 +6,11 @@ import co.com.srdejo.trazabilidad.domain.spi.ITraceabilityPersistencePort;
 import co.com.srdejo.trazabilidad.infrastructure.out.mongo.mapper.ITraceabilityEntityMapper;
 import co.com.srdejo.trazabilidad.infrastructure.out.mongo.repository.ITraceabilityRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 public class TraceabilityMongoAdapter implements ITraceabilityPersistencePort {
 
@@ -19,6 +21,7 @@ public class TraceabilityMongoAdapter implements ITraceabilityPersistencePort {
     public TraceabilityModel save(TraceabilityModel traceabilityModel) {
         var entity = traceabilityEntityMapper.toEntity(traceabilityModel);
         var saved = traceabilityRepository.save(entity);
+        log.debug("Persisted traceability record {} for order {}", saved.getId(), saved.getOrderId());
         return traceabilityEntityMapper.toModel(saved);
     }
 
