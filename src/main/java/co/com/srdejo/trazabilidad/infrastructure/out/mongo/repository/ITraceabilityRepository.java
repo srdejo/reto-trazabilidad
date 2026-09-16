@@ -10,5 +10,10 @@ public interface ITraceabilityRepository extends MongoRepository<TraceabilityEnt
 
     List<TraceabilityEntity> findByCustomerIdOrderByDateAsc(Long customerId);
     List<TraceabilityEntity> findByCustomerIdAndOrderIdOrderByDateAsc(Long customerId, Long orderId);
+    List<TraceabilityEntity> findByOrderId(Long orderId);
+    List<TraceabilityEntity> findByNewStatus(String newStatus);
+    List<TraceabilityEntity> findByOrderIdInAndPreviousStatusIsNull(List<Long> orderIds);
+    List<TraceabilityEntity> findByOrderIdAndNewStatusOrOrderIdAndPreviousStatusIsNull(
+            Long orderId, String newStatus, Long orderIdForPreviousStatus);
 
 }

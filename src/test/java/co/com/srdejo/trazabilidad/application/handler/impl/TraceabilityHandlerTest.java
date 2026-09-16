@@ -1,10 +1,14 @@
 package co.com.srdejo.trazabilidad.application.handler.impl;
 
 import co.com.srdejo.trazabilidad.application.dto.request.TraceabilityRequestDto;
+import co.com.srdejo.trazabilidad.application.dto.response.EmployeeRankingResponseDto;
+import co.com.srdejo.trazabilidad.application.dto.response.OrderDurationResponseDto;
 import co.com.srdejo.trazabilidad.application.dto.response.TraceabilityResponseDto;
 import co.com.srdejo.trazabilidad.application.mapper.ITraceabilityRequestMapper;
 import co.com.srdejo.trazabilidad.application.mapper.ITraceabilityResponseMapper;
 import co.com.srdejo.trazabilidad.domain.api.ITraceabilityServicePort;
+import co.com.srdejo.trazabilidad.domain.model.EmployeeRankingModel;
+import co.com.srdejo.trazabilidad.domain.model.OrderDurationModel;
 import co.com.srdejo.trazabilidad.domain.model.TraceabilityModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -86,5 +90,31 @@ class TraceabilityHandlerTest {
 
         assertThat(result).containsExactly(responseDto);
         verify(traceabilityServicePort).getHistoryByCustomer(123L);
+    }
+
+    @Test
+    void getOrderDuration_delegatesToServicePortAndMapsResponse() {
+        OrderDurationModel model = new OrderDurationModel(123L, LocalDateTime.now().minusMinutes(30),
+                LocalDateTime.now(), 1800L);
+        OrderDurationResponseDto responseDto = new OrderDurationResponseDto(123L, model.getStartDate(),
+                model.getEndDate(), 1800L);
+        when(traceabilityServicePort.getOrderDuration(123L)).thenReturn(model);
+        when(traceabilityResponseMapper.toDurationResponse(model)).thenReturn(responseDto);
+
+        OrderDurationResponseDto result = traceabilityHandler.getOrderDuration(123L);
+
+        assertThat(result).isEqualTo(responseDto);
+    }
+
+    @Test
+    void getEmployeeRanking_delegatesToServicePortAndMapsResponseList() {
+        EmployeeRankingModel model = new EmployeeRankingModel(7L, "employee@mail.com", 3, 1200.0);
+        EmployeeRankingResponseDto responseDto = new EmployeeRankingResponseDto(7L, "employee@mail.com", 3, 1200.0);
+        when(traceabilityServicePort.getEmployeeRanking()).thenReturn(List.of(model));
+        when(traceabilityResponseMapper.toRankingResponseList(List.of(model))).thenReturn(List.of(responseDto));
+
+        List<EmployeeRankingResponseDto> result = traceabilityHandler.getEmployeeRanking();
+
+        assertThat(result).containsExactly(responseDto);
     }
 }

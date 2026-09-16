@@ -1,6 +1,8 @@
 package co.com.srdejo.trazabilidad.infrastructure.input.rest;
 
 import co.com.srdejo.trazabilidad.application.dto.request.TraceabilityRequestDto;
+import co.com.srdejo.trazabilidad.application.dto.response.EmployeeRankingResponseDto;
+import co.com.srdejo.trazabilidad.application.dto.response.OrderDurationResponseDto;
 import co.com.srdejo.trazabilidad.application.dto.response.TraceabilityResponseDto;
 import co.com.srdejo.trazabilidad.application.handler.ITraceabilityHandler;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -71,5 +74,44 @@ public class TraceabilityRestController {
             @Parameter(description = "Order id to filter the history by", example = "1")
             @RequestParam(required = false) Long orderId) {
         return ResponseEntity.ok(traceabilityHandler.getHistoryByCustomer(orderId));
+    }
+
+    @Operation(
+            summary = "Get an order's elapsed time",
+            description = "Returns the elapsed time between an order's creation and its delivery. " +
+                    "Only available to the OWNER role."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Order duration returned",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = OrderDurationResponseDto.class))),
+            @ApiResponse(responseCode = "401", description = "Missing or invalid token", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Role not authorized to view the duration", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Order not found", content = @Content),
+            @ApiResponse(responseCode = "409", description = "Order has not been delivered yet", content = @Content)
+    })
+    @PreAuthorize("hasRole('OWNER')")
+    @GetMapping("/{orderId}/duration")
+    public ResponseEntity<OrderDurationResponseDto> getOrderDuration(@PathVariable Long orderId) {
+        return ResponseEntity.ok(traceabilityHandler.getOrderDuration(orderId));
+    }
+
+    @Operation(
+            summary = "Get the employee ranking by average delivery time",
+            description = "Returns, for every employee who has delivered at least one order, the average elapsed " +
+                    "time between order creation and delivery, sorted ascending (fastest average first). " +
+                    "Only available to the OWNER role."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Employee ranking returned",
+                    content = @Content(mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = EmployeeRankingResponseDto.class)))),
+            @ApiResponse(responseCode = "401", description = "Missing or invalid token", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Role not authorized to view the ranking", content = @Content)
+    })
+    @PreAuthorize("hasRole('OWNER')")
+    @GetMapping("/employees/ranking")
+    public ResponseEntity<List<EmployeeRankingResponseDto>> getEmployeeRanking() {
+        return ResponseEntity.ok(traceabilityHandler.getEmployeeRanking());
     }
 }

@@ -92,4 +92,44 @@ class TraceabilityMongoAdapterTest {
 
         assertThat(result).isEmpty();
     }
+
+    @Test
+    void findByOrderId_mapsEachRepositoryEntityToAModel() {
+        TraceabilityEntity entity = new TraceabilityEntity();
+        TraceabilityModel model = new TraceabilityModel("1", 123L, 15L, "customer@mail.com",
+                LocalDateTime.now(), "PENDING", "IN_PREPARATION", 7L, "employee@mail.com");
+        when(traceabilityRepository.findByOrderId(123L)).thenReturn(List.of(entity));
+        when(traceabilityEntityMapper.toModel(entity)).thenReturn(model);
+
+        List<TraceabilityModel> result = traceabilityMongoAdapter.findByOrderId(123L);
+
+        assertThat(result).containsExactly(model);
+    }
+
+    @Test
+    void findByNewStatus_mapsEachRepositoryEntityToAModel() {
+        TraceabilityEntity entity = new TraceabilityEntity();
+        TraceabilityModel model = new TraceabilityModel("1", 123L, 15L, "customer@mail.com",
+                LocalDateTime.now(), "READY", "DELIVERED", 7L, "employee@mail.com");
+        when(traceabilityRepository.findByNewStatus("DELIVERED")).thenReturn(List.of(entity));
+        when(traceabilityEntityMapper.toModel(entity)).thenReturn(model);
+
+        List<TraceabilityModel> result = traceabilityMongoAdapter.findByNewStatus("DELIVERED");
+
+        assertThat(result).containsExactly(model);
+    }
+
+    @Test
+    void findByOrderIdInAndPreviousStatusIsNull_mapsEachRepositoryEntityToAModel() {
+        TraceabilityEntity entity = new TraceabilityEntity();
+        TraceabilityModel model = new TraceabilityModel("1", 123L, 15L, "customer@mail.com",
+                LocalDateTime.now(), null, "PENDING", null, "");
+        when(traceabilityRepository.findByOrderIdInAndPreviousStatusIsNull(List.of(123L)))
+                .thenReturn(List.of(entity));
+        when(traceabilityEntityMapper.toModel(entity)).thenReturn(model);
+
+        List<TraceabilityModel> result = traceabilityMongoAdapter.findByOrderIdInAndPreviousStatusIsNull(List.of(123L));
+
+        assertThat(result).containsExactly(model);
+    }
 }
